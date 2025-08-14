@@ -38,3 +38,38 @@
     - 增强开发体验
     - 插件和扩展性；
 
+
+html\css\js --> 模块化 --> npm包管理 --> 工具整合打包 --> 上线浏览器运行
+
+----------------------------------------------------------------------------------------------------------------
+模块化：esmodule、commonjs、amd、umd，为了处理全局变量污染、依赖和维护成本问题。
+esm和commonjs的区别：
+ - esm在编译时解析依赖，commonjs在运行时解析依赖。
+ - esm支持异步加载，模块顶层是独立作用域，不与全局作用域共享。
+ - commonjs同步加载模块，模块顶层是文件作用域，与全局作用域共享。
+
+------------------------------------
+npm:基于nodejs的包管理工具。由两个部分组成，一个是cli用于发布和下载，另一个是在线仓库。 
+package.json: 描述项目信息、依赖、脚本等。npm init初始化就会生成。
+npm script：执行脚本命令。
+{
+  "scripts": {
+    "build": "tsc",
+    "format": "prettier --write **/*.ts",
+    "format-check": "prettier --check **/*.ts",
+    "lint": "eslint src/**/*.ts",
+    "pack": "ncc build",
+    "test": "jest",
+    "all": "npm run build && npm run format && npm run lint && npm run pack && npm test"
+  }
+}
+eslint src/**/*.ts为什么可以执行，当npm scripts执行时，会查找node_modules/.bin目录下的可执行文件，这些文件其实是可执行的文件链接，由安装在项目中的npm包导出，比如
+"bin": {
+    "eslint": "./bin/eslint.js"
+},
+这是由package.json中的bin字段指定的。
+直接在命令行执行npx eslint src/**/*.ts也可以，npx会查找node_modules/.bin目录下的可执行文件，并执行。
+
+---------------------------------------------------------------------------------------------
+webpack
+为什么产生？解决了什么问题？怎么使用？运行原理？
