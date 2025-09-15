@@ -1,0 +1,23 @@
+{
+  "name": "summaryplan",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/liuyao7/summaryPlan.git"
+  },
+  "author": "liuyao",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/liuyao7/summaryPlan/issues"
+  },
+  "homepage": "https://github.com/liuyao7/summaryPlan#readme",
+  "devDependencies": {
+    "@babel/core": "^7.28.3",
+    "babel-plugin-transform-es2015-arrow-functions": "^6.22.0"
+  }
+}
