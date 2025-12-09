@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue sourceCode</title>
+</head>
+
+<body>
+    <div>
+        age: <span id="count">0</span>
+    </div>
+    <button onclick="add()">测试</button>
+
+</body>
+<script src="./reactive.js"></script>
+<script>
+    const obj = {
+        name: 'lyao',
+        age: 18
+    };
+
+    const proxyObj = reactive(obj);
+
+    console.log(proxyObj.name);
+    console.log(proxyObj.age);
+
+    proxyObj.age = 20;
+    console.log(proxyObj.age);
+
+    const add = () => {
+        proxyObj.age++;
+        document.getElementById('count').innerText = proxyObj.age;
+    }
+</script>
+
+</html>

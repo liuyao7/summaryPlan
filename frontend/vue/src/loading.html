@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue sourceCode</title>
+    <style>
+        .wrap {
+            width: 100px;
+            height: 100px;
+            border: 2px solid red;
+            background-color: red;
+            border-radius: 50%;
+            position: relative;
+        }
+        .center {
+            width: 80px;
+            height: 80px;
+            border: 2px solid blue;
+            background-color: blue;
+            border-radius: 50%;
+            position: absolute;
+            top: 8px;
+            left: 8px;
+        }
+        .inner {
+            width: 60px;
+            height: 60px;
+            border: 2px solid green;
+            background-color: green;
+            border-radius: 50%;
+            position: absolute;
+            top: 8px;
+            left: 8px;
+        }
+        @keyframes kuoda {
+            0% {
+                transform: scale(.3);
+            }
+            25% {
+                transform: scale(.6);
+            }
+            50% {
+                transform: scale(1);
+            }
+            75% {
+                transform: scale(.6);
+            }
+            100% {
+                transform: scale(.3);
+            }
+        }
+        @keyframes ckuoda {
+            0% {
+                transform: scale(.3);
+            }
+            25% {
+                transform: scale(.6);
+            }
+            50% {
+                transform: scale(1);
+            }
+            75% {
+                transform: scale(.6);
+            }
+            100% {
+                transform: scale(.3);
+            }
+        }
+        @keyframes dkuoda {
+            0% {
+                transform: scale(.3);
+            }
+            25% {
+                transform: scale(.6);
+            }
+            50% {
+                transform: scale(1);
+            }
+            75% {
+                transform: scale(.6);
+            }
+            100% {
+                transform: scale(.3);
+            }
+        }
+        .wrap {
+            animation: kuoda 1s linear infinite;
+        }
+        .center {
+            animation: ckuoda 1s linear infinite;
+        }
+        .inner {
+            animation: dkuoda 1s linear infinite;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+       <div class="center">
+            <div class="inner">
+                
+            </div>
+       </div>
+    </div>
+
+</body>
+<!-- <script src="./reactive.js"></script>
+<script>
+    const obj = {
+        name: 'lyao',
+        age: 18
+    };
+
+    const proxyObj = reactive(obj);
+
+    console.log(proxyObj.name);
+    console.log(proxyObj.age);
+
+    proxyObj.age = 20;
+    console.log(proxyObj.age);
+
+    const add = () => {
+        proxyObj.age++;
+        document.getElementById('count').innerText = proxyObj.age;
+    }
+</script> -->
+
+</html>
