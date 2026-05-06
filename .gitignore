@@ -1,6 +1,18 @@
-/frontend/node_modules/
+# Node modules
+**/node_modules/
 
+# macOS
 .DS_Store
 
+# Obsidian
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
+
+# Claude
+.claude/
+
+# Comate
+.comate/
+
+# Trash
+.trash/
