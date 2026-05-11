@@ -21,6 +21,14 @@ export async function parseBirthday(birthday: string): Promise<AIResult> {
 }
 
 /**
+ * 生成AI结果（别名函数）
+ */
+export async function generateAIResult(birthday: Date): Promise<AIResult> {
+  const birthdayStr = birthday.toISOString().split('T')[0];
+  return parseBirthday(birthdayStr);
+}
+
+/**
  * 实际调用厂内接口的示例代码（后续替换）
  */
 /*
