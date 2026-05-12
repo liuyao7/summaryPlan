@@ -18,7 +18,7 @@ export default function LoadingScreen({ message = '正在加载中...' }: Loadin
   }, []);
 
   return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-gray-900 via-purple-900/20 to-gray-900 z-50">
+    <div className="fixed inset-0 flex flex-col items-center justify-center bg-linear-to-b from-gray-900 via-purple-900/20 to-gray-900 z-50">
       {/* 加载动画 */}
       <div className="relative w-20 h-20 mb-8">
         {/* 外圈旋转 */}
@@ -40,7 +40,7 @@ export default function LoadingScreen({ message = '正在加载中...' }: Loadin
 
       {/* 加载进度条 */}
       <div className="mt-6 w-48 h-1 bg-white/10 rounded-full overflow-hidden">
-        <div className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-loading-bar" />
+        <div className="h-full bg-linear-to-r from-purple-500 to-pink-500 rounded-full animate-loading-bar" />
       </div>
 
       <style jsx>{`
