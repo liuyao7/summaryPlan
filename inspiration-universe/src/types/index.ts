@@ -30,3 +30,29 @@ export interface SceneConfig {
     ambient: string;
   };
 }
+
+// 星体数据类型
+export interface CelestialBodyData {
+  id: string;
+  name: string;
+  englishName: string;
+  type: 'star' | 'planet';
+  position: [number, number, number];
+  size: number;
+  color: string;
+  distance: number; // 光年
+  description: string;
+}
+
+export interface StarData extends CelestialBodyData {
+  type: 'star';
+}
+
+export interface PlanetData extends CelestialBodyData {
+  type: 'planet';
+}
+
+export interface InteractionProps {
+  onClick?: (data: CelestialBodyData) => void;
+  onHover?: (data: CelestialBodyData | null) => void;
+}
