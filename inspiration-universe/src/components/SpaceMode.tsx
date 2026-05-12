@@ -1,53 +1,72 @@
-import { useRef } from 'react';
-  import { Canvas, useFrame } from '@react-three/fiber';
-  import { OrbitControls, Points, PointMaterial } from '@react-three/drei';
-  import * as THREE from 'three';
+'use client';
 
-  interface SpaceModeProps {
-    themeColor?: string;
-  }
+import { useState } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
+import SpaceUniverse from './SpaceUniverse';
+import InfoPanel from './InfoPanel';
+import { StarData } from '@/types';
 
-  function Particles({ themeColor }: { themeColor: string }) {
-    const ref = useRef<THREE.Points>(null);
-    const particlesCount = 2000;
-    const positions = new Float32Array(particlesCount * 3);
-    const colors = new Float32Array(particlesCount * 3);
+export default function SpaceMode() {
+  const [selectedStar, setSelectedStar] = useState<StarData | null>(null);
+  const [showPanel, setShowPanel] = useState(false);
 
-    for (let i = 0; i < particlesCount; i++) {
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
-      const radius = 5 + Math.random() * 10;
-      positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
-      positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-      positions[i * 3 + 2] = radius * Math.cos(phi);
-      const color = new THREE.Color(themeColor);
-      const variation = Math.random() * 0.3 - 0.15;
-      colors[i * 3] = Math.max(0, Math.min(1, color.r + variation));
-      colors[i * 3 + 1] = Math.max(0, Math.min(1, color.g + variation));
-      colors[i * 3 + 2] = Math.max(0, Math.min(1, color.b + variation));
-    }
+  const handleStarSelect = (star: StarData | null) => {
+    setSelectedStar(star);
+    setShowPanel(true);
+  };
 
-    useFrame((state) => {
-      if (ref.current) {
-        ref.current.rotation.x = state.clock.getElapsedTime() * 0.05;
-        ref.current.rotation.y = state.clock.getElapsedTime() * 0.03;
-      }
-    });
+  const handleClosePanel = () => {
+    setShowPanel(false);
+    setSelectedStar(null);
+  };
 
-    return (
-      <Points ref={ref} positions={positions} colors={colors} stride={3}>
-        <PointMaterial transparent vertexColors size={0.05} sizeAttenuation={true} depthWrite={false} />
-      </Points>
-    );
-  }
-
-  export default function SpaceMode({ themeColor = '#8B5CF6' }: SpaceModeProps) {
-    return (
-      <Canvas camera={{ position: [0, 0, 15], fov: 60 }} style={{ width: '100%', height: '100%' }}>
+  return (
+    <div className="relative w-full h-screen bg-black">
+      {/* 3D Canvas */}
+      <Canvas
+        camera={{ position: [0, 0, 80], fov: 60 }}
+        gl={{
+          antialias: true,
+          alpha: false,
+          powerPreference: 'high-performance'
+        }}
+        dpr={[1, 2]}
+      >
         <color attach="background" args={['#000000']} />
-        <OrbitControls enableDamping dampingFactor={0.05} minDistance={5} maxDistance={30} />
-        <Particles themeColor={themeColor} />
-        <ambientLight intensity={0.5} />
+        <fog attach="fog" args={['#000000', 100, 500]} />
+
+        <SpaceUniverse onStarSelect={handleStarSelect} />
+
+        <OrbitControls
+          enableDamping
+          dampingFactor={0.05}
+          minDistance={20}
+          maxDistance={200}
+          enablePan={true}
+          panSpeed={0.5}
+          rotateSpeed={0.5}
+          zoomSpeed={0.8}
+        />
       </Canvas>
-    );
-  }
+
+      {/* 信息面板 */}
+      <InfoPanel
+        visible={showPanel}
+        data={selectedStar}
+        onClose={handleClosePanel}
+      />
+
+      {/* 提示文字 */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/40 text-sm pointer-events-none">
+        <p>拖拽旋转视角 | 滚轮缩放 | 点击星体查看详情</p>
+      </div>
+
+      {/* 标题 */}
+      <div className="absolute top-8 left-8">
+        <h1 className="text-2xl font-bold text-white/80 mb-1">灵感宇宙</h1>
+        <p className="text-sm text-white/40">探索星际的无限可能</p>
+      </div>
+    </div>
+  );
+}
