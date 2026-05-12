@@ -2,7 +2,7 @@
 
 import { Canvas } from '@react-three/fiber';
 import { PointerLockControls, Sky } from '@react-three/drei';
-import { Suspense, useRef } from 'react';
+import { Suspense } from 'react';
 import * as THREE from 'three';
 
 // 树组件
