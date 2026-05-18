@@ -148,4 +148,5 @@ async function agentLoop(userQuestion) {
 
 // ============ 运行 ============
 // agentLoop("今天北京天气怎么样？下雨我就带伞，天晴我就去爬山");
-agentLoop("你好，讲个笑话");
+// agentLoop("你好，讲个笑话");
+agentLoop("北京的温度加上上海的湿度数值，总和是多少？");
