@@ -111,14 +111,7 @@ async function agentLoop(userQuestion) {
     // 将助手的消息加入对话记录
     messages.push(assistantMessage);
 
-    // 如果模型直接回复文本 → 任务完成
-    if (assistantMessage.content) {
-      console.log(`  思考：直接回复，不调工具`);
-      console.log(`  最终回复：${assistantMessage.content}`);
-      return assistantMessage.content;
-    }
-
-    // ②③ 行动 + 观察：模型要调工具
+    // 先检查是否要调工具，再检查纯文本
     if (assistantMessage.tool_calls) {
       for (const toolCall of assistantMessage.tool_calls) {
         const fnName = toolCall.function.name;
@@ -138,8 +131,15 @@ async function agentLoop(userQuestion) {
         });
       }
       console.log(""); // 空行分隔
-      // ④ 回到循环开头，让模型看到工具结果后再决定
+      // ④ 回到循环开头
       continue;
+    }
+
+    // 模型没有调工具，直接回复文本 → 任务完成
+    if (assistantMessage.content) {
+      console.log(`  思考：直接回复，不调工具`);
+      console.log(`  最终回复：${assistantMessage.content}`);
+      return assistantMessage.content;
     }
   }
 
