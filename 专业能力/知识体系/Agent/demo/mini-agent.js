@@ -76,10 +76,17 @@ async function agentLoop(userQuestion) {
   const messages = [
     {
       role: "system",
-      content: `你是一个实用助手。遇到以下情况必须使用工具，不要凭记忆猜测：
-1. 查询天气 → 用 get_weather
-2. 数学计算 → 用 calculator
-收到工具结果后，基于结果用中文自然回答用户。`,
+      content: `你是一个实用助手。调用工具的规则（违反将导致错误）：
+
+规则1：当用户要求查天气时，你唯一能做的第一件事就是调用 get_weather 工具。
+       绝对禁止先说"让我查一下""好的我帮你看看"等文字，必须直接调用工具！
+       你嘴上说"让我查一下"但不去调用函数 = 你没查 = 你在骗用户。
+
+规则2：当用户要求做数学计算时，必须调用 calculator 工具，不要心算。
+
+规则3：只有当你已经拿到工具返回的结果后，才可以用中文回复用户。
+
+记住：看到天气问题 → 立刻调 get_weather。看到计算问题 → 立刻调 calculator。不要废话。`,
     },
     { role: "user", content: userQuestion },
   ];
