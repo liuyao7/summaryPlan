@@ -10,7 +10,7 @@ const client = new OpenAI({
   baseURL: "https://oneapi-comate.baidu-int.com/v1",
 });
 
-const MODEL = "DeepSeek V4 Pro";
+const MODEL = "DeepSeek-V4-Pro";
 
 // ============ 工具定义 ============
 const tools = [
