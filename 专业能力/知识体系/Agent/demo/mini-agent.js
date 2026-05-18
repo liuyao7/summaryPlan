@@ -5,7 +5,8 @@ import OpenAI from "openai";
 
 // ============ 配置 ============
 const client = new OpenAI({
-  apiKey: process.env.DEEPSEEK_API_KEY, // 从 https://platform.deepseek.com 获取
+  apiKey: 'sk-pjVlSzHYooahYksmBe9fF10932E34279891558C3E5497251', // 从 https://platform.deepseek.com 获取
+//   apiKey: process.env.DEEPSEEK_API_KEY, // 从 https://platform.deepseek.com 获取
   baseURL: "https://oneapi-comate.baidu-int.com/v1",
 });
 
