@@ -6,7 +6,7 @@ import OpenAI from "openai";
 // ============ 配置 ============
 const client = new OpenAI({
   apiKey: process.env.DEEPSEEK_API_KEY, // 从 https://platform.deepseek.com 获取
-  baseURL: "https://api.deepseek.com",
+  baseURL: "https://oneapi-comate.baidu-int.com/v1",
 });
 
 const MODEL = "deepseek-chat";
