@@ -376,3 +376,90 @@ Function Calling 负责 "模型什么时候该调工具"（推理层）
 现在你看 OpenClaw / Hermes 的源码会轻松很多：它们底层都在用 MCP 连接工具，只是各自的编排层（Agent Loop、Memory、Cron）不一样。
 
 跑完之后告诉我要不要加第二个 MCP 服务（比如把 calculator 也独立出来），我们就完成阶段二了。
+
+4. 第一步：创建计算器 MCP 服务
+calculator-server.js
++51
+Thought for 2 seconds
+第二步：改造 Agent 支持多 MCP 服务同时接入
+mini-agent-mcp.js
+Thought for a few seconds
+Read
+专业能力/知识体系/Agent/demo/mini-agent-mcp.js
+L1-117
+Thought for 6 seconds
+mini-agent-mcp.js
++77
+-43
+Thought for 3 seconds
+完成。运行方式不变：
+
+bash
+
+插入到终端中
+
+复制
+node mini-agent-mcp.js
+改了什么——关键架构变化
+原来（单服务）：
+
+text
+
+插入
+
+复制
+mini-agent-mcp ──MCP──→ weather-server（1个工具）
+现在（多服务）：
+
+text
+
+插入
+
+复制
+                    ┌──MCP──→ weather-server    （get_weather）
+mini-agent-mcp ────┤
+                    └──MCP──→ calculator-server  （calculator）
+三个核心函数的变化：
+
+函数	原来	现在
+connectMCP	连 1 个服务	connectAllMCP 连 N 个服务，存到数组
+getToolsDef	从 1 个服务拉工具	getAllTools 遍历所有服务，聚合工具列表
+executeToolViaMCP	直接调唯一的服务	遍历找"哪个服务有这个工具"，找到后调用
+Agent 循环本身一行没改——这就是架构分层的力量。
+
+你会看到的输出
+text
+
+插入
+
+复制
+MCP 已连接：weather（weather-server.js）
+MCP 已连接：calculator（calculator-server.js）
+发现工具：get_weather, calculator
+
+用户：深圳今天多少度？北京多少度？把两个城市的温度加起来一共多少度？哪个更热？
+--- Agent 开始循环 ---
+
+[第 1 轮]
+  finish_reason: tool_calls
+  行动：MCP 调用 get_weather({"city":"深圳"})
+  观察：get_weather 返回 → 深圳天气：晴天，温度30°C，湿度50%
+  行动：MCP 调用 get_weather({"city":"北京"})
+  观察：get_weather 返回 → 北京天气：小雨，温度18°C，湿度80%
+
+[第 2 轮]
+  finish_reason: tool_calls
+  行动：MCP 调用 calculator({"expression":"30+18"})
+  观察：calculator 返回 → 30+18 = 48
+
+[第 3 轮]
+  finish_reason: stop
+  最终回复：深圳30°C，北京18°C，加起来48°C。深圳更热。
+观察点：Agent 在第1轮时不知道 calculator 来自哪个服务——它只管说"我要用 calculator"，然后 executeToolViaMCP 自动找到了 calculator-server。对 Agent 循环来说，两个服务和二十个服务没有区别。
+
+阶段二总结
+你现在掌握了：
+
+Function Calling 底层：finish_reason 是真正的信号，tool_choice 控制模型自由度，工具描述决定模型会不会选对工具
+MCP 协议：Agent 通过统一协议动态发现和调用工具，工具实现独立部署、独立语言、独立维护
+多服务架构：Agent 可以同时接入多个 MCP 服务，循环代码不需要任何改动
