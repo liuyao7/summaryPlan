@@ -108,6 +108,11 @@ async function agentLoop(userQuestion) {
     const choice = response.choices[0];
     const assistantMessage = choice.message;
 
+    // 调试：看模型底层返回了什么
+    console.log(`  [调试] finish_reason: ${choice.finish_reason}`);
+    console.log(`  [调试] has_content: ${!!assistantMessage.content}`);
+    console.log(`  [调试] has_tool_calls: ${!!assistantMessage.tool_calls}`);
+
     // 将助手的消息加入对话记录
     messages.push(assistantMessage);
 
