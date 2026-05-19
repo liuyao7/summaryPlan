@@ -1,6 +1,6 @@
 // mini-agent-rag.js — 带 RAG 记忆的 Agent
 // 依赖：npm install openai @modelcontextprotocol/sdk
-import OpenAI from "openai";
+import OpenAI from "openai/index.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { readFileSync, writeFileSync, existsSync } from "fs";

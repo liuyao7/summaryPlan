@@ -1,7 +1,7 @@
 // mini-agent.js
 // 使用前：npm install openai（是的，DeepSeek API 兼容 OpenAI SDK 格式）
 
-import OpenAI from "openai";
+import OpenAI from "openai/index.js";
 
 // ============ 配置 ============
 const client = new OpenAI({
