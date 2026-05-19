@@ -90,11 +90,6 @@ async function agentLoop(userQuestion, connections) {
 ${memory || "（暂无历史记忆）"}
 === 记忆结束 ===
 
-工具规则：
-- 查天气 → 调用 get_weather
-- 做计算 → 调用 calculator
-- 不要凭记忆猜测或先说"让我查查"
-
 当用户告诉你关于他自己的新信息时（名字、偏好、计划等），在你回复的末尾加上标签：
 [MEMORY: 要记住的内容]
 
