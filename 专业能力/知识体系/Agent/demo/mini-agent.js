@@ -102,7 +102,8 @@ async function agentLoop(userQuestion) {
       model: MODEL,
       messages,
       tools,
-      tool_choice: "auto", // 让模型自己决定要不要调工具
+      tool_choice: "required",
+    //   tool_choice: "auto", // 让模型自己决定要不要调工具
     });
 
     const choice = response.choices[0];
@@ -155,4 +156,5 @@ async function agentLoop(userQuestion) {
 // agentLoop("今天北京天气怎么样？下雨我就带伞，天晴我就去爬山");
 // agentLoop("你好，讲个笑话");
 // agentLoop("北京的温度加上上海的湿度数值，总和是多少？");
-agentLoop("帮我算一下 365 乘以 24 等于多少");
+// agentLoop("帮我算一下 365 乘以 24 等于多少");
+agentLoop("深圳今天多少度？北京多少度？两个城市的温度加起来一共多少度？");
