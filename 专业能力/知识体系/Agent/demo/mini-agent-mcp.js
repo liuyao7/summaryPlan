@@ -6,10 +6,10 @@ import { spawn } from "child_process";
 
 // ============ 配置 ============
 const client = new OpenAI({
-  apiKey: process.env.DEEPSEEK_API_KEY,
-  baseURL: "https://api.deepseek.com",
+  apiKey: 'sk-pjVlSzHYooahYksmBe9fF10932E34279891558C3E5497251',
+  baseURL: "https://oneapi-comate.baidu-int.com/v1",
 });
-const MODEL = "deepseek-chat";
+const MODEL = "DeepSeek-V4-Pro";
 
 // ============ MCP 客户端：连接工具服务 ============
 async function connectMCP() {
