@@ -27,3 +27,19 @@ mlx-whisper	whisper.cpp
 依赖	Python ≥ 3.9 + pip	仅需 C++ 编译器 / Homebrew
 安装	pip install mlx-whisper	brew install whisper-cpp
 你的环境能直接用？	不行（Python 3.8）	可以
+
+
+# 需要手动下载模型
+mkdir -p ~/.whisper-models && cd ~/.whisper-models
+curl -LO "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo.bin"
+
+之后跑的时候用绝对路径：
+
+bash
+whisper-cli -m ~/.whisper-models/ggml-large-v3-turbo.bin -f /path/to/audio.wav -l zh
+如果想方便点，写个别名到 ~/.zshrc：
+
+bash
+
+alias asr='whisper-cli -m ~/.whisper-models/ggml-large-v3-turbo.bin -l zh'
+之后直接 asr -f audio.wav 就行。
