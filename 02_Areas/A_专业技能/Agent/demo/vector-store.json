@@ -40,5 +40,113 @@
       0,
       0.1
     ]
+  },
+  {
+    "id": "food-1",
+    "text": "用户对花生过敏，吃了会起疹子",
+    "vector": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0.3,
+      0.6,
+      0.95,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0.2
+    ]
+  },
+  {
+    "id": "work-1",
+    "text": "用户是前端工程师，专注 React 开发",
+    "vector": [
+      0,
+      0,
+      0,
+      0.9,
+      0,
+      0.7,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0.8,
+      0
+    ]
+  },
+  {
+    "id": "work-2",
+    "text": "用户在学习 AI Agent 技术",
+    "vector": [
+      {
+        "dimension": "户外运动",
+        "score": 0
+      },
+      {
+        "dimension": "室内运动",
+        "score": 0
+      },
+      {
+        "dimension": "体育竞技",
+        "score": 0
+      },
+      {
+        "dimension": "技术/编程",
+        "score": 0.8
+      },
+      {
+        "dimension": "AI/机器学习",
+        "score": 1
+      },
+      {
+        "dimension": "职业/工作",
+        "score": 0.1
+      },
+      {
+        "dimension": "食物/饮食",
+        "score": 0
+      },
+      {
+        "dimension": "健康/医疗",
+        "score": 0
+      },
+      {
+        "dimension": "过敏/禁忌",
+        "score": 0
+      },
+      {
+        "dimension": "娱乐/爱好",
+        "score": 0
+      },
+      {
+        "dimension": "旅游/地理",
+        "score": 0
+      },
+      {
+        "dimension": "人际关系",
+        "score": 0
+      },
+      {
+        "dimension": "学习/成长",
+        "score": 0.9
+      },
+      {
+        "dimension": "NBA/篮球",
+        "score": 0
+      },
+      {
+        "dimension": "风险/危险",
+        "score": 0
+      }
+    ]
   }
 ]
