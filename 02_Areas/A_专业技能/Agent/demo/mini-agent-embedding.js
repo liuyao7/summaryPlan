@@ -64,34 +64,30 @@ const SEMANTIC_DIMS = [
 async function getEmbedding(text) {
   const dimsStr = SEMANTIC_DIMS.map((d, i) => `${i}. ${d}`).join(", ");
 
+  const example = Array(SEMANTIC_DIMS.length).fill(0);
+  example[0] = 0.9; example[9] = 0.8; // 户外运动/娱乐爱好示例
+
   const response = await client.chat.completions.create({
     model: MODEL,
     messages: [
       {
         role: "system",
-        content: `你是一个语义分析器。给定一段文本，为以下 ${SEMANTIC_DIMS.length} 个语义维度打分（0.0 到 1.0）。
-维度列表：${dimsStr}
-只返回 JSON 数组，包含 ${SEMANTIC_DIMS.length} 个 0.0-1.0 之间的数字，对应每个维度的相关性。
-示例输出：[0.9, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.1, 0.0, 0.8, 0.3, 0.0, 0.1, 0.0, 0.0]`,
+        content: `你是语义打分器。输出固定格式 JSON：{"scores":[n0,n1,...,n${SEMANTIC_DIMS.length-1}]}
+scores 是长度严格为 ${SEMANTIC_DIMS.length} 的数字数组，每个值 0.0-1.0，对应维度：${dimsStr}`,
       },
+      { role: "user", content: "用户喜欢爬山，经常周末徒步" },
+      { role: "assistant", content: `{"scores":${JSON.stringify(example)}}` },
       { role: "user", content: `文本：${text}` },
     ],
     response_format: { type: "json_object" },
   });
 
-  // 模型可能返回 { "scores": [...] } 或直接是数组
   const raw = response.choices[0].message.content;
-  let parsed = JSON.parse(raw);
-  if (Array.isArray(parsed)) return parsed;
-  // 找第一个数组字段
-  const arr = Object.values(parsed).find((v) => Array.isArray(v));
-  if (arr) return arr;
-  // 处理 {"0": 0.1, "1": 0.5, ...} 格式（数字键对象）
-  const keys = Object.keys(parsed);
-  if (keys.every((k) => !isNaN(Number(k)))) {
-    return keys.sort((a, b) => Number(a) - Number(b)).map((k) => parsed[k]);
+  const parsed = JSON.parse(raw);
+  if (Array.isArray(parsed.scores) && parsed.scores.length === SEMANTIC_DIMS.length) {
+    return parsed.scores;
   }
-  throw new Error("无法解析向量: " + raw);
+  throw new Error("向量长度不对: " + raw);
 }
 
 /**
