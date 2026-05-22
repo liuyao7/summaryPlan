@@ -1,15 +1,16 @@
 /**
  * mini-agent-embedding.js
  *
- * 演示真正的语义向量检索（Embedding-based RAG）
+ * 演示语义向量检索（Semantic RAG）的核心原理
  *
- * 核心概念：
- * - Embedding：把文本变成高维向量（1536维），语义相近 → 向量相近
- * - 余弦相似度：两个向量夹角越小，语义越接近（值越接近1）
- * - 与关键词匹配的区别："爬山" 和 "运动" 关键词不同，但向量距离很近
+ * 架构说明：
+ * 真实 Embedding 模型（text-embedding-3-small 等）把文本映射到高维向量空间。
+ * 本 Demo 用 LLM 生成「语义特征向量」来模拟这个过程：
+ *   - 向量维度 = 预定义的语义维度（运动/技术/健康/食物/娱乐等）
+ *   - 数值 = LLM 对该文本在该维度上的相关性评分 [0, 1]
+ *   - 余弦相似度 = 同样的数学公式
  *
- * 文件结构：
- * - vector-store.json：本地持久化向量库（id, text, vector, metadata）
+ * 这种方式让你可以「看见」向量里装了什么，真实 Embedding 维度不可解释但数学相同。
  *
  * 运行：node mini-agent-embedding.js
  */
@@ -24,58 +25,77 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const API_KEY = "sk-pjVlSzHYooahYksmBe9fF10932E34279891558C3E5497251";
 const BASE_URL = "https://oneapi-comate.baidu-int.com/v1";
 const MODEL = "DeepSeek-V4-Pro";
-const EMBEDDING_MODEL = "text-embedding-3-small";
 
-const chatClient = new OpenAI({ apiKey: API_KEY, baseURL: BASE_URL });
-const embeddingClient = new OpenAI({ apiKey: API_KEY, baseURL: BASE_URL });
+const client = new OpenAI({ apiKey: API_KEY, baseURL: BASE_URL });
 
 const STORE_FILE = path.join(__dirname, "vector-store.json");
 
 // ============================================================
-// 向量存储核心实现
+// 语义维度定义（这就是我们的"向量空间"）
+// 真实 Embedding：1536 个不可解释的维度
+// 本 Demo：15 个可读的语义维度
+// ============================================================
+const SEMANTIC_DIMS = [
+  "户外运动",     // 0
+  "室内运动",     // 1
+  "体育竞技",     // 2
+  "技术/编程",    // 3
+  "AI/机器学习",  // 4
+  "职业/工作",    // 5
+  "食物/饮食",    // 6
+  "健康/医疗",    // 7
+  "过敏/禁忌",    // 8
+  "娱乐/爱好",    // 9
+  "旅游/地理",    // 10
+  "人际关系",     // 11
+  "学习/成长",    // 12
+  "NBA/篮球",    // 13
+  "风险/危险",    // 14
+];
+
+// ============================================================
+// 核心：生成语义向量
 // ============================================================
 
 /**
- * 加载本地向量库
- */
-function loadStore() {
-  if (!fs.existsSync(STORE_FILE)) return [];
-  try {
-    return JSON.parse(fs.readFileSync(STORE_FILE, "utf-8"));
-  } catch {
-    return [];
-  }
-}
-
-/**
- * 持久化向量库
- */
-function saveStore(docs) {
-  fs.writeFileSync(STORE_FILE, JSON.stringify(docs, null, 2));
-}
-
-/**
- * 获取文本的 Embedding 向量
- * @returns {number[]} 1536 维向量
+ * 用 LLM 把一段文本映射成语义特征向量
+ * 每个维度的值 = 该文本与该语义维度的相关性 [0.0 - 1.0]
  */
 async function getEmbedding(text) {
-  const res = await embeddingClient.embeddings.create({
-    model: EMBEDDING_MODEL,
-    input: text,
+  const dimsStr = SEMANTIC_DIMS.map((d, i) => `${i}. ${d}`).join(", ");
+
+  const response = await client.chat.completions.create({
+    model: MODEL,
+    messages: [
+      {
+        role: "system",
+        content: `你是一个语义分析器。给定一段文本，为以下 ${SEMANTIC_DIMS.length} 个语义维度打分（0.0 到 1.0）。
+维度列表：${dimsStr}
+只返回 JSON 数组，包含 ${SEMANTIC_DIMS.length} 个 0.0-1.0 之间的数字，对应每个维度的相关性。
+示例输出：[0.9, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.1, 0.0, 0.8, 0.3, 0.0, 0.1, 0.0, 0.0]`,
+      },
+      { role: "user", content: `文本：${text}` },
+    ],
+    response_format: { type: "json_object" },
   });
-  return res.data[0].embedding;
+
+  // 模型可能返回 { "scores": [...] } 或直接是数组
+  const raw = response.choices[0].message.content;
+  let parsed = JSON.parse(raw);
+  if (Array.isArray(parsed)) return parsed;
+  // 找第一个数组字段
+  const arr = Object.values(parsed).find((v) => Array.isArray(v));
+  if (arr) return arr;
+  throw new Error("无法解析向量: " + raw);
 }
 
 /**
- * 余弦相似度：计算两个向量的语义距离
- * 值域 [-1, 1]，越接近 1 越相似
- *
- * 公式：cos(θ) = (A·B) / (|A| * |B|)
+ * 余弦相似度：衡量两个向量的语义距离
+ * cos(θ) = (A·B) / (|A| * |B|)
+ * 值域 [0, 1]，越接近 1 = 语义越相似
  */
 function cosineSimilarity(a, b) {
-  let dot = 0;
-  let normA = 0;
-  let normB = 0;
+  let dot = 0, normA = 0, normB = 0;
   for (let i = 0; i < a.length; i++) {
     dot += a[i] * b[i];
     normA += a[i] * a[i];
@@ -84,189 +104,151 @@ function cosineSimilarity(a, b) {
   return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
-/**
- * 向量库：添加文档
- */
-async function addDocument(id, text, metadata = {}) {
+// ============================================================
+// 向量存储（文件持久化）
+// ============================================================
+
+function loadStore() {
+  if (!fs.existsSync(STORE_FILE)) return [];
+  try { return JSON.parse(fs.readFileSync(STORE_FILE, "utf-8")); }
+  catch { return []; }
+}
+
+function saveStore(docs) {
+  fs.writeFileSync(STORE_FILE, JSON.stringify(docs, null, 2));
+}
+
+async function addDocument(id, text) {
   const docs = loadStore();
-  // 避免重复
   if (docs.find((d) => d.id === id)) return;
 
-  console.log(`  [Embedding] 生成向量: "${text.slice(0, 30)}..."`);
+  process.stdout.write(`  [向量化] "${text.slice(0, 24)}..." `);
   const vector = await getEmbedding(text);
+  
+  // 打印高激活维度（让你"看见"向量里装了什么）
+  const topDims = vector
+    .map((v, i) => ({ dim: SEMANTIC_DIMS[i], score: v }))
+    .filter((d) => d.score > 0.5)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map((d) => `${d.dim}(${d.score.toFixed(1)})`);
+  console.log(`→ 主维度: [${topDims.join(", ")}]`);
 
-  docs.push({ id, text, vector, metadata });
+  docs.push({ id, text, vector });
   saveStore(docs);
 }
 
 /**
- * 向量库：语义检索 Top-K
- * @param {string} query - 查询文本
- * @param {number} topK - 返回最相关的 K 条
- * @param {number} threshold - 相似度阈值（低于此值不返回）
+ * 语义检索 Top-K
  */
 async function search(query, topK = 3, threshold = 0.3) {
   const docs = loadStore();
   if (docs.length === 0) return [];
 
   const queryVector = await getEmbedding(query);
-
-  const scored = docs.map((doc) => ({
-    ...doc,
-    score: cosineSimilarity(queryVector, doc.vector),
-  }));
-
-  return scored
+  return docs
+    .map((doc) => ({ ...doc, score: cosineSimilarity(queryVector, doc.vector) }))
     .filter((d) => d.score >= threshold)
     .sort((a, b) => b.score - a.score)
     .slice(0, topK);
 }
 
 // ============================================================
-// Demo 1：验证语义理解（"爬山" vs "运动"）
+// Demo 1：核心验证——"爬山" vs "运动"
 // ============================================================
 
 async function demo1_semanticUnderstanding() {
   console.log("\n===== Demo1：语义理解验证 =====");
-  console.log("问题：关键词不同但语义相近的词，向量距离是否更近？\n");
+  console.log('关键词 "运动爱好" 能否匹配到 "爬山" 和 "游泳"？\n');
 
-  // 写入几条测试数据
   await addDocument("sport-1", "用户喜欢爬山，经常周末去山里徒步");
   await addDocument("sport-2", "用户喜欢游泳，每周去游泳馆三次");
-  await addDocument("food-1", "用户对花生过敏，吃了会起疹子");
-  await addDocument("work-1", "用户是前端工程师，专注 React 开发");
-  await addDocument("work-2", "用户在学习 AI Agent 技术");
+  await addDocument("food-1",  "用户对花生过敏，吃了会起疹子");
+  await addDocument("work-1",  "用户是前端工程师，专注 React 开发");
+  await addDocument("work-2",  "用户在学习 AI Agent 技术");
 
-  // 用 "户外运动" 查询——关键词里没有 "爬山" 或 "游泳"
-  console.log('查询："喜欢什么运动"');
-  const results1 = await search("用户喜欢什么运动", 3);
-  results1.forEach((r) => {
-    console.log(`  [${r.score.toFixed(4)}] ${r.text}`);
-  });
+  console.log('\n查询："用户有什么运动爱好？"');
+  const results = await search("用户有什么运动爱好", 3);
+  results.forEach((r) => console.log(`  [${r.score.toFixed(3)}] ${r.text}`));
 
-  // 用 "技术方向" 查询
-  console.log('\n查询："技术方向"');
-  const results2 = await search("用户的技术方向是什么", 2);
-  results2.forEach((r) => {
-    console.log(`  [${r.score.toFixed(4)}] ${r.text}`);
-  });
-
-  // 用 "健康" 查询
-  console.log('\n查询："健康注意事项"');
-  const results3 = await search("用户有什么健康问题需要注意", 2);
-  results3.forEach((r) => {
-    console.log(`  [${r.score.toFixed(4)}] ${r.text}`);
-  });
+  console.log('\n查询："用户有什么健康注意事项？"');
+  const results2 = await search("用户有什么健康注意事项", 2);
+  results2.forEach((r) => console.log(`  [${r.score.toFixed(3)}] ${r.text}`));
 }
 
 // ============================================================
-// Demo 2：Embedding-based RAG Agent
+// Demo 2：关键词 vs 向量检索对比实验
 // ============================================================
 
-async function demo2_ragAgent() {
-  console.log("\n===== Demo2：真正的 RAG Agent =====");
+async function demo2_comparison() {
+  console.log("\n===== Demo2：关键词 vs 向量检索对比 =====");
 
-  // 用户画像数据
-  const userProfile = [
-    { id: "p1", text: "用户叫张三，35岁，住深圳" },
-    { id: "p2", text: "张三是产品经理，擅长需求分析和产品规划" },
-    { id: "p3", text: "张三喜欢爬山，每周末都会去山里徒步" },
-    { id: "p4", text: "张三在学习 AI Agent 开发，目标成为 AI 产品经理" },
-    { id: "p5", text: "张三对花生过敏，外出吃饭要特别注意" },
-    { id: "p6", text: "张三喜欢看 NBA，最喜欢的球队是湖人" },
-  ];
+  const query = "他平时有什么体育运动类的爱好？";
+  console.log(`查询: "${query}"\n`);
 
-  // 写入向量库
-  console.log("写入用户画像到向量库...");
-  for (const item of userProfile) {
-    await addDocument(item.id, item.text);
+  // 关键词匹配
+  const docs = loadStore();
+  const texts = docs.filter(d => ["sport-1","sport-2","food-1","work-1"].includes(d.id)).map(d => d.text);
+  
+  function keywordSearch(q, docs) {
+    const kws = q.split(/[？，。\s]+/).filter((w) => w.length > 1);
+    return docs.filter(doc => kws.some(kw => doc.includes(kw)));
   }
 
-  // 模拟对话：用向量检索替代全量注入
+  const kwResults = keywordSearch(query, texts);
+  console.log("关键词匹配：");
+  if (kwResults.length === 0) {
+    console.log('  (无结果) ← "体育运动" 不在任何文档中！');
+  } else {
+    kwResults.forEach((r) => console.log(`  ✓ ${r}`));
+  }
+
+  console.log("\n向量检索：");
+  const vecResults = await search(query, 2, 0.3);
+  vecResults.forEach((r) => console.log(`  [${r.score.toFixed(3)}] ${r.text}`));
+  
+  console.log('\n结论：关键词找不到"爬山"/"游泳"（语义相同但词不同）');
+  console.log('       向量检索通过"户外运动"维度正确命中。');
+}
+
+// ============================================================
+// Demo 3：带向量检索的 RAG Agent
+// ============================================================
+
+async function demo3_ragAgent() {
+  console.log("\n===== Demo3：RAG Agent（向量检索版）=====");
+
+  // 补充更多用户画像
+  await addDocument("p1", "用户叫张三，35岁，住深圳");
+  await addDocument("p2", "张三是产品经理，擅长需求分析和产品规划");
+  await addDocument("p3", "张三在学习 AI Agent 开发，目标成为 AI 产品经理");
+  await addDocument("p4", "张三喜欢看 NBA，最喜欢的球队是湖人");
+
   const questions = [
-    "这个用户平时有什么爱好？",
-    "他的职业背景是什么？",
-    "今天要去吃火锅，有什么需要注意的？",
+    "这个人的职业背景是什么？",
+    "今天去吃花生酱饼干，有什么要注意的？",
+    "周末适合什么活动？",
   ];
 
-  for (const question of questions) {
-    console.log(`\n用户: ${question}`);
+  for (const q of questions) {
+    console.log(`\n用户: ${q}`);
 
-    // 1. 检索相关记忆
-    const memories = await search(question, 2, 0.4);
+    const memories = await search(q, 2, 0.35);
     const context = memories.map((m) => m.text).join("\n");
+    console.log(`  [RAG] 检索到 ${memories.length} 条: ${memories.map(m => `(${m.score.toFixed(2)})`).join(" ")}`);
 
-    console.log(`  [RAG 检索到] ${memories.length} 条相关记忆`);
-    memories.forEach((m) => console.log(`    (${m.score.toFixed(3)}) ${m.text}`));
-
-    // 2. 只把相关记忆注入 System Prompt（不是全量数据）
-    const response = await chatClient.chat.completions.create({
+    const resp = await client.chat.completions.create({
       model: MODEL,
       messages: [
         {
           role: "system",
-          content: `你是用户的个人助手。以下是关于用户的相关背景信息：
----
-${context || "暂无相关信息"}
----
-基于以上信息回答用户问题，保持简短（1-2句话）。`,
+          content: `你是用户助手。相关背景：\n${context || "无"}\n简短回答（1-2句）。`,
         },
-        { role: "user", content: question },
+        { role: "user", content: q },
       ],
     });
-
-    console.log(`  助手: ${response.choices[0].message.content}`);
+    console.log(`  助手: ${resp.choices[0].message.content}`);
   }
-}
-
-// ============================================================
-// Demo 3：对比实验——关键词 vs 向量检索
-// ============================================================
-
-async function demo3_comparison() {
-  console.log("\n===== Demo3：关键词匹配 vs 向量检索对比 =====");
-
-  const docs = [
-    "用户喜欢爬山，经常去山里徒步",
-    "用户喜欢游泳，每周去游泳馆",
-    "用户对花生过敏",
-    "用户是前端工程师",
-  ];
-
-  const query = "这个人有什么体育运动爱好？";
-
-  console.log(`查询: "${query}"\n`);
-
-  // 关键词匹配
-  function keywordSearch(query, docs) {
-    const keywords = query.split(/[，。？\s]+/).filter((w) => w.length > 1);
-    return docs
-      .map((doc) => {
-        const hits = keywords.filter((kw) => doc.includes(kw)).length;
-        return { doc, score: hits };
-      })
-      .filter((r) => r.score > 0)
-      .sort((a, b) => b.score - a.score);
-  }
-
-  const kwResults = keywordSearch(query, docs);
-  console.log("关键词匹配结果：");
-  if (kwResults.length === 0) {
-    console.log("  (无匹配) → 找不到任何结果！");
-  } else {
-    kwResults.forEach((r) => console.log(`  [命中${r.score}] ${r.doc}`));
-  }
-
-  // 向量检索
-  // 先把这几条数据写入
-  for (let i = 0; i < docs.length; i++) {
-    await addDocument(`cmp-${i}`, docs[i]);
-  }
-  const vecResults = await search(query, 3, 0.3);
-  console.log("\n向量检索结果：");
-  vecResults.forEach((r) => console.log(`  [${r.score.toFixed(4)}] ${r.text}`));
-
-  console.log("\n结论：关键词找不到「爬山」和「游泳」，向量检索通过语义正确命中。");
 }
 
 // ============================================================
@@ -274,12 +256,11 @@ async function demo3_comparison() {
 // ============================================================
 
 async function main() {
-  // 每次运行前清空向量库，保证演示数据干净
   if (fs.existsSync(STORE_FILE)) fs.unlinkSync(STORE_FILE);
 
   await demo1_semanticUnderstanding();
-  await demo2_ragAgent();
-  await demo3_comparison();
+  await demo2_comparison();
+  await demo3_ragAgent();
 }
 
 main().catch(console.error);
