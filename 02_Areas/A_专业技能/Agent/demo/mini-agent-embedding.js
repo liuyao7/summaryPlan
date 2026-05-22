@@ -86,6 +86,11 @@ async function getEmbedding(text) {
   // 找第一个数组字段
   const arr = Object.values(parsed).find((v) => Array.isArray(v));
   if (arr) return arr;
+  // 处理 {"0": 0.1, "1": 0.5, ...} 格式（数字键对象）
+  const keys = Object.keys(parsed);
+  if (keys.every((k) => !isNaN(Number(k)))) {
+    return keys.sort((a, b) => Number(a) - Number(b)).map((k) => parsed[k]);
+  }
   throw new Error("无法解析向量: " + raw);
 }
 
