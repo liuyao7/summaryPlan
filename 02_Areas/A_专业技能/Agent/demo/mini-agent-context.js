@@ -159,15 +159,15 @@ class ContextManager {
   }
 
   /** 更新 Token 估算 */
-  _updateEstimates() {
-    let total = this.summary.length * 0.5; // 摘要每个字符 ~0.5 token
+_updateEstimates() {
+    let total = (this.summary || "").length * 0.5;
     for (const msg of this.messages) {
-      total += this.config.estimatedTokensPerMsg;
+      total += this.config.estimatedTokensPerMsg || 100;
       if (typeof msg.content === "string") {
-        total += msg.content.length * 0.5;
+        total += (msg.content || "").length * 0.5;
       }
     }
-    this.stats.estimatedTokens = Math.round(total);
+    this.stats.estimatedTokens = Math.round(total) || 0;
   }
 
   /** 打印状态 */
