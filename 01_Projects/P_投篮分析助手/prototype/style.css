@@ -1,0 +1,156 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
+  background: #0f1115;
+  color: #e6e6e6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  padding: 24px 32px;
+  border-bottom: 1px solid #1f2329;
+}
+
+header h1 {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 12px;
+  padding: 2px 8px;
+  background: #2563eb;
+  border-radius: 4px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.sub {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #888;
+}
+
+main {
+  flex: 1;
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.upload-zone {
+  border: 2px dashed #333;
+  border-radius: 8px;
+  padding: 48px;
+  text-align: center;
+}
+
+.upload-btn {
+  display: inline-block;
+  padding: 10px 24px;
+  background: #2563eb;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.upload-btn:hover { background: #1d4ed8; }
+
+.hint {
+  margin-top: 12px;
+  font-size: 12px;
+  color: #888;
+}
+
+.canvas-wrap {
+  position: relative;
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+#video, #overlay {
+  display: block;
+  width: 100%;
+  max-height: 540px;
+}
+
+#overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.controls button {
+  padding: 8px 16px;
+  background: #1f2937;
+  border: 1px solid #374151;
+  color: #e6e6e6;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.controls button:hover:not(:disabled) { background: #374151; }
+.controls button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.status {
+  font-size: 13px;
+  color: #888;
+}
+
+.report {
+  background: #161a20;
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.report h2 {
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #1f2329;
+  font-size: 13px;
+}
+
+.issue {
+  margin-top: 12px;
+  padding: 12px;
+  border-left: 3px solid;
+  background: #1f2329;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.issue.minor { border-color: #eab308; }
+.issue.moderate { border-color: #f97316; }
+.issue.major { border-color: #ef4444; }
+
+footer {
+  padding: 16px 32px;
+  border-top: 1px solid #1f2329;
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+}

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>投篮分析助手 · Web 原型</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header>
+    <h1>投篮分析助手 <span class="tag">Web Prototype v0</span></h1>
+    <p class="sub">浏览器本地推理 · MediaPipe BlazePose · 无需上传</p>
+  </header>
+
+  <main>
+    <section class="upload-zone">
+      <label for="videoInput" class="upload-btn">选择投篮视频</label>
+      <input type="file" id="videoInput" accept="video/*" hidden />
+      <p class="hint">建议：侧面 90° 拍摄、5-10 秒、1080p 以下、单次投篮</p>
+    </section>
+
+    <section class="canvas-wrap" id="canvasWrap" hidden>
+      <video id="video" playsinline muted controls></video>
+      <canvas id="overlay"></canvas>
+    </section>
+
+    <section class="controls" id="controls" hidden>
+      <button id="analyzeBtn">开始分析</button>
+      <button id="replayBtn" disabled>逐帧回放</button>
+      <span id="status" class="status">就绪</span>
+    </section>
+
+    <section class="report" id="report" hidden>
+      <h2>分析结果</h2>
+      <div id="metrics"></div>
+      <div id="issues"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Spike 目标：验证浏览器端 30s 视频姿态检测可行性 + 1 条规则 (肘部外翻)</p>
+  </footer>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
